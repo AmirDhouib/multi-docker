@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t amirdev/react-test -f Dockerfile.dev ./client
+
+script:
+  - docker run amirdev/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t amirdev/multi-client ./client
+  - docker build -t amirdev/multi-nginx ./nginx
+  - docker build -t amirdev/multi-server ./server
+  - docker build -t amirdev/multi-worker ./worker
+
+# log in to the docker cli
+  -echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+# take those images and push them to docker hub
+
+  - docker push amirdev/multi-client
+  - docker push amirdev/multi-nginx
+  - docker push amirdev/multi-server
+  - docker push amirdev/multi-worker
